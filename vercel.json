@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://payflow-backend.onrender.com/api/$1"
+    }
+  ]
+}
