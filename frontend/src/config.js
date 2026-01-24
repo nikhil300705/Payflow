@@ -1,2 +1,1 @@
-// frontend/src/config.js
-export const BACKEND_URL = "/api/v1";
+export const BACKEND_URL = "/api";

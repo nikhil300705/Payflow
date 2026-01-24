@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://payflow-backend.onrender.com/api/$1"
+      "destination": "https://payflow-backend.onrender.com/api/v1/$1"
     }
   ]
 }
