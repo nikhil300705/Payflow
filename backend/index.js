@@ -6,13 +6,22 @@ const mainRouter = require("./routes/mainRouter");
 const app = express();
 app.use(express.json());
 
+// ✅ Health check (important for Render)
+app.get("/", (req, res) => {
+  res.send("PayFlow backend running");
+});
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch(() => process.exit(1));
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
 
 app.use("/api/v1", mainRouter);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

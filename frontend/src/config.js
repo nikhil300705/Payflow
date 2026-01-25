@@ -1,1 +1,3 @@
-export const BACKEND_URL = "/api";
+// frontend/src/config.js
+
+export const BACKEND_URL = "/api/v1";
