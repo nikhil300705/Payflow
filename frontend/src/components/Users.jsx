@@ -9,14 +9,15 @@ export default function Users({ onSuccess }) {
   async function sendMoney() {
     setLoading(true);
     await axios.post(
-      "http://51.21.193.154:5000/api/v1/account/transfer",
-      { to: "dummyUserId", amount: Number(amount) },
-      {
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-        },
-      }
-    );
+  `${BACKEND_URL}/account/transfer`,
+  { to: "dummyUserId", amount: Number(amount) },
+  {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("token"),
+    },
+  }
+);
+
 
     onSuccess({
       amount,

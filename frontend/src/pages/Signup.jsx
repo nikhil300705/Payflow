@@ -22,9 +22,9 @@ export default function Signup() {
       // signup success → go to signin
       navigate("/signin");
     } catch (err) {
-      console.error(err);
-      alert("Signup failed");
-    }
+  console.log(err.response?.data || err.message);
+  alert(err.response?.data?.message || "Signup failed - check console");
+}
   };
 
   return (
