@@ -1,79 +1,81 @@
-import axios from "axios";
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import { BACKEND_URL } from "../config";
+import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
 
-  const signup = async () => {
+  async function handleSignup() {
     try {
-      await axios.post(`${BACKEND_URL}/user/signup`, {
-        firstName,
-        lastName,
-        email,
-        password,
-      });
 
-      // signup success → go to signin
-      navigate("/signin");
+      const res = await axios.post(
+        `${BACKEND_URL}/user/signup`,
+        {
+          userName: email,   // IMPORTANT
+          firstName,
+          lastName,
+          password
+        }
+      );
+
+      alert(res.data.message);
+
+      if (res.data.message === "User created successfully") {
+        navigate("/signin");
+      }
+
     } catch (err) {
-  console.log(err.response?.data || err.message);
-  alert(err.response?.data?.message || "Signup failed - check console");
-}
-  };
+      console.log(err);
+      alert("Signup failed");
+    }
+  }
 
   return (
     <div className="h-screen flex items-center justify-center bg-slate-200">
       <div className="bg-white p-8 rounded-xl w-[380px] shadow">
-        <h1 className="text-3xl font-bold text-center text-blue-500">PayFlow</h1>
-        <h2 className="text-xl text-center mt-2">Sign up</h2>
-        <p className="text-center text-gray-500 mb-4">
-          Enter your information to create an account
-        </p>
+
+        <h1 className="text-2xl font-bold text-center mb-4">PayFlow</h1>
+        <p className="text-center text-gray-500 mb-6">Sign up</p>
 
         <input
-          className="w-full border p-2 rounded mb-3"
-          placeholder="First Name"
+          className="border w-full p-2 mb-3 rounded"
+          placeholder="First name"
           onChange={(e) => setFirstName(e.target.value)}
         />
 
         <input
-          className="w-full border p-2 rounded mb-3"
-          placeholder="Last Name"
+          className="border w-full p-2 mb-3 rounded"
+          placeholder="Last name"
           onChange={(e) => setLastName(e.target.value)}
         />
 
         <input
-          className="w-full border p-2 rounded mb-3"
+          className="border w-full p-2 mb-3 rounded"
           placeholder="Email"
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <input
-          className="w-full border p-2 rounded mb-4"
           type="password"
+          className="border w-full p-2 mb-4 rounded"
           placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <button
-          onClick={signup}
-          className="w-full bg-slate-800 text-white p-2 rounded"
+          onClick={handleSignup}
+          className="bg-black text-white w-full p-2 rounded hover:bg-gray-800"
         >
           Sign up
         </button>
 
-        <p className="text-center mt-3">
-          Already have an account?{" "}
-          <Link to="/signin" className="underline">
-            Sign in
-          </Link>
-        </p>
       </div>
     </div>
   );
