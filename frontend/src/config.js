@@ -1,1 +1,1 @@
-export const BACKEND_URL = "https://condo-cottages-randy-track.trycloudflare.com/api/v1";
+export const BACKEND_URL = "https://clinic-option-prayers-branches.trycloudflare.com/api/v1";
