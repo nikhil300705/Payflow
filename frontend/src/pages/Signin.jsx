@@ -16,9 +16,9 @@ export default function Signin() {
       }
 
       const res = await axios.post(`${BACKEND_URL}/user/signin`, {
-        email: email.trim().toLowerCase(),
-        password: password.trim(),
-      });
+  userName: email.trim().toLowerCase(),
+  password: password.trim(),
+});
 
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
