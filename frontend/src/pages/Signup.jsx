@@ -15,15 +15,13 @@ export default function Signup() {
   async function handleSignup() {
     try {
 
-      const res = await axios.post(
-        `${BACKEND_URL}/user/signup`,
-        {
-          userName: email,   // IMPORTANT
-          firstName,
-          lastName,
-          password
-        }
-      );
+      const res = await axios.post(`${BACKEND_URL}/user/signup`, {
+  firstName,
+  lastName,
+  email,
+  password,
+});
+
 
       alert(res.data.message);
 
