@@ -1,1 +1,2 @@
-export const BACKEND_URL = "https://clinic-option-prayers-branches.trycloudflare.com/api/v1";
+export const BASE_URL = "https://confirmed-essence-editorials-outcomes.trycloudflare.com/api/v1";
+

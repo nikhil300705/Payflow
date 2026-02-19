@@ -12,30 +12,30 @@ export default function Signup() {
 
   const navigate = useNavigate();
 
- async function handleSignup() {
-  try {
-    const res = await axios.post(
-      `${BACKEND_URL}/user/signup`,
-      {
-        userName: email.trim().toLowerCase(),
-        firstName,
-        lastName,
-        password
+  async function handleSignup() {
+    try {
+
+      const res = await axios.post(
+        `${BACKEND_URL}/user/signup`,
+        {
+          userName: email,   // IMPORTANT
+          firstName,
+          lastName,
+          password
+        }
+      );
+
+      alert(res.data.message);
+
+      if (res.data.message === "User created successfully") {
+        navigate("/signin");
       }
-    );
 
-    // ⭐ LOGIN IMMEDIATELY AFTER SIGNUP
-    localStorage.setItem("token", res.data.token);
-
-    alert("Account created successfully");
-
-    // go directly to dashboard
-    navigate("/dashboard");
-
-  } catch (err) {
-    alert(err.response?.data?.message || "Signup failed");
+    } catch (err) {
+      console.log(err);
+      alert("Signup failed");
+    }
   }
-}
 
   return (
     <div className="h-screen flex items-center justify-center bg-slate-200">
