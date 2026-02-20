@@ -1,2 +1,1 @@
-export const BACKEND_URL =
-  "https://confirmed-essence-editorials-outcomes.trycloudflare.com/api/v1";
+export const BACKEND_URL = "http://51.21.193.154:9100/api/v1";
