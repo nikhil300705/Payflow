@@ -1,220 +1,227 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { BACKEND_URL } from "../config";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const [balance, setBalance] = useState(0);
+  const [name, setName] = useState("");
+  const [transactions, setTransactions] = useState([]);
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
-  const [amount, setAmount] = useState("");
-  const [firstName, setFirstName] = useState("");
 
-  /* ---------- AUTH GUARD ---------- */
-  useEffect(() => {
-    if (!token) navigate("/signin");
-  }, []);
-
-  /* ---------- BALANCE ---------- */
-  useEffect(() => {
-    axios
-      .get(`${BACKEND_URL}/account/balance`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => setBalance(res.data.balance))
-      .catch(() => {});
-  }, []);
-
-  /* ---------- CURRENT USER (GREETING) ---------- */
-  useEffect(() => {
-    axios
-      .get(`${BACKEND_URL}/user/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => setFirstName(res.data.firstName))
-      .catch(() => {});
-  }, []);
-
-  /* ---------- USERS ---------- */
-  useEffect(() => {
-    axios
-      .get(`${BACKEND_URL}/user/bulk?filter=${filter}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(res => setUsers(res.data.users || []))
-      .catch(() => setUsers([]));
-  }, [filter]);
-
-  /* ---------- SEND MONEY ---------- */
-  const sendMoney = async (to) => {
-    if (!amount) {
-      alert("Enter amount");
-      return;
-    }
-
-    try {
-      await axios.post(
-        `${BACKEND_URL}/account/transfer`,
-        { to, amount: Number(amount) },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      const res = await axios.get(`${BACKEND_URL}/account/balance`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setBalance(res.data.balance);
-      setAmount("");
-      alert("Transfer successful");
-    } catch {
-      alert("Transfer failed");
-    }
-  };
-
-  /* ---------- LOGOUT ---------- */
-  const logout = () => {
+  function logout() {
     localStorage.removeItem("token");
     navigate("/signin");
-  };
+  }
+
+  async function loadBalance() {
+    const res = await axios.get(`${BACKEND_URL}/account/balance`, {
+      headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+    });
+
+    setBalance(res.data.balance);
+    setName(res.data.firstName);
+    setTransactions(res.data.transactions);
+  }
+
+  async function loadUsers(text = "") {
+    const res = await axios.get(`${BACKEND_URL}/user/bulk?filter=${text}`, {
+      headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+    });
+
+    setUsers(res.data.users);
+  }
+
+  useEffect(() => {
+    loadBalance();
+    loadUsers();
+  }, []);
+
+  useEffect(() => {
+    const delay = setTimeout(() => loadUsers(filter), 300);
+    return () => clearTimeout(delay);
+  }, [filter]);
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* NAVBAR */}
-      <div className="flex justify-between items-center px-10 py-4 bg-slate-50 shadow">
-        <h1 className="text-2xl font-bold text-blue-500">PayFlow</h1>
+    <div className="min-h-screen bg-[#eef2f7] p-10">
 
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-slate-300 flex items-center justify-center">
-            {firstName?.[0]?.toUpperCase()}
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-bold text-blue-600">PayFlow</h1>
+
+        <div className="flex items-center gap-4">
+          {/* USER ICON */}
+          <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center font-semibold">
+            {name?.charAt(0)}
           </div>
+
+          {/* SMALL LOGOUT */}
           <button
             onClick={logout}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg"
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm shadow"
           >
             Logout
           </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-8 px-6 space-y-6">
+      {/* MAIN GRID */}
+      <div className="grid grid-cols-2 gap-10">
 
-        {/* BALANCE + ACTIVITY */}
-        <div className="grid grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow">
-            <div className="flex justify-between text-blue-500 font-semibold">
-              <span>Current Balance</span>
-              <span>{new Date().toDateString()}</span>
+        {/* LEFT COLUMN */}
+        <div className="space-y-8">
+
+          {/* BALANCE CARD */}
+          <div className="bg-white p-6 rounded-xl shadow">
+            <div className="flex justify-between">
+              <div className="text-blue-600 font-semibold">
+                Current Balance
+              </div>
+              <div className="text-gray-500 text-sm">
+                {new Date().toDateString()}
+              </div>
             </div>
 
-            <p className="mt-2 text-gray-600">Welcome, {firstName}</p>
+            <div className="text-gray-600 mt-2">
+              Welcome, {name}
+            </div>
 
-            <h2 className="text-4xl font-bold mt-3">${balance}</h2>
-            <p className="text-sm text-gray-500 mt-1">Available</p>
+            <div className="text-5xl font-bold mt-4">
+              ${balance}
+            </div>
 
-            <div className="flex gap-3 mt-4">
-              <button className="border rounded-full px-4 py-1 text-blue-500">
+            <div className="text-gray-500 mt-1">
+              Available
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm">
                 Transfer Money
               </button>
-              <button className="border rounded-full px-4 py-1 text-blue-500">
+              <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm">
                 Add Money
               </button>
-              <button className="border rounded-full px-4 py-1 text-blue-500">
+              <button className="bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm">
                 Manage currencies
               </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-6 shadow">
-            <h3 className="text-blue-500 font-semibold text-center">
-              Recent Activity
-            </h3>
-
-            <div className="border rounded-lg mt-4 p-2 grid grid-cols-4 text-sm text-gray-500">
-              <span>Timestamp</span>
-              <span>Amount</span>
-              <span>Type</span>
-              <span>Recipient ID</span>
+          {/* BANK & CARDS */}
+          <div className="bg-white p-6 rounded-xl shadow">
+            <div className="text-blue-600 font-semibold mb-4">
+              Bank and cards
             </div>
 
-            <div className="mt-4 bg-pink-100 text-sm p-2 rounded">
-              <span className="font-semibold text-blue-500">
-                Take our quick survey
-              </span>
-              <p>
-                We want to know what you think about the new website.
-                It will only take a few seconds
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* BANK & CARDS (STATIC UI) */}
-        <div className="bg-white rounded-xl p-6 shadow w-1/2">
-          <h3 className="text-blue-500 font-semibold mb-4">Bank and cards</h3>
-
-          <div className="mb-3">
-            <p className="font-semibold">US BANK, MO</p>
-            <p className="text-gray-500 text-sm">
-              Checking ending with ********7384
-            </p>
-          </div>
-
-          <div className="mb-4">
-            <p className="font-semibold">DISCOVER</p>
-            <p className="text-gray-500 text-sm">
-              Card ending with ********8465
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <button className="border rounded-full px-4 py-1 text-blue-500">
-              Link a card or bank
-            </button>
-            <button className="border rounded-full px-4 py-1 text-blue-500">
-              Manage cards or banks
-            </button>
-          </div>
-        </div>
-
-        {/* USERS LIST */}
-        <div className="bg-white rounded-xl p-6 shadow">
-          <h3 className="font-semibold mb-3">Users</h3>
-
-          <input
-            className="w-full border rounded p-2 mb-3"
-            placeholder="Search users..."
-            onChange={e => setFilter(e.target.value)}
-          />
-
-          <input
-            className="w-full border rounded p-2 mb-4"
-            placeholder="Enter amount"
-            value={amount}
-            onChange={e => setAmount(e.target.value)}
-          />
-
-          {users.map(user => (
-            <div
-              key={user._id}
-              className="flex justify-between items-center mb-3"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-slate-300 flex items-center justify-center">
-                  {user.firstName[0]}
-                </div>
-                <span>{user.firstName} {user.lastName}</span>
+            <div className="mb-4">
+              <div className="font-semibold">US BANK, MO</div>
+              <div className="text-gray-500 text-sm">
+                Checking ending with ******7384
               </div>
+            </div>
 
-              <button
-                onClick={() => sendMoney(user._id)}
-                className="bg-slate-800 text-white px-4 py-2 rounded"
-              >
-                Send Money
+            <div className="mb-6">
+              <div className="font-semibold">DISCOVER</div>
+              <div className="text-gray-500 text-sm">
+                Card ending with ******8465
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button className="bg-[#0f172a] text-white px-4 py-2 rounded-full text-sm">
+                Link a card or bank
+              </button>
+              <button className="bg-[#0f172a] text-white px-4 py-2 rounded-full text-sm">
+                Manage cards or banks
               </button>
             </div>
-          ))}
+          </div>
+
+          {/* USERS */}
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="font-semibold text-lg mb-4">Users</h2>
+
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="border w-full p-2 rounded mb-6"
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              {users.map(user => (
+                <div
+                  key={user._id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
+                      {user.firstName.charAt(0)}
+                    </div>
+                    <div className="text-sm">
+                      {user.firstName}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      navigate("/send", {
+                        state: { id: user._id, name: user.firstName }
+                      })
+                    }
+                    className="bg-[#1e293b] hover:bg-[#0f172a] text-white w-24 h-9 rounded-full text-sm flex items-center justify-center transition"
+                  >
+                    Send
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* RIGHT COLUMN — RECENT ACTIVITY */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <div className="text-blue-600 font-semibold mb-4">
+            Recent Activity
+          </div>
+
+          <div className="grid grid-cols-4 font-semibold border-b pb-2 mb-2 text-sm">
+            <div>Timestamp</div>
+            <div>Amount</div>
+            <div>Type</div>
+            <div>Recipient ID</div>
+          </div>
+
+          {transactions.length === 0 ? (
+            <div className="text-gray-400">No recent transactions</div>
+          ) : (
+            transactions.slice().reverse().map((t) => (
+              <div
+                key={t._id}
+                className="grid grid-cols-4 border-b py-2 text-sm"
+              >
+                <div>{new Date(t.date).toLocaleString()}</div>
+
+                <div className={
+                  t.type === "debit"
+                    ? "text-red-500"
+                    : "text-green-600"
+                }>
+                  {t.type === "debit" ? "-" : "+"}${t.amount}
+                </div>
+
+                <div>{t.type}</div>
+
+                <div>{t._id.slice(-6)}</div>
+              </div>
+            ))
+          )}
         </div>
 
       </div>

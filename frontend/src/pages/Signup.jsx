@@ -5,76 +5,87 @@ import { useNavigate } from "react-router-dom";
 
 export default function Signup() {
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
 
-  const navigate = useNavigate();
+const navigate = useNavigate();
 
-  async function handleSignup() {
-    try {
-
-      const res = await await axios.post(`${BACKEND_URL}/user/signup`, {
-  firstName,
-  lastName,
-  email,
-  password
-});
+async function handleSignup() {
 
 
-      alert(res.data.message);
+const payload = {
+  username: email.trim(),
+  firstName: firstName.trim(),
+  lastName: lastName.trim(),
+  password: password.trim()
+};
 
-      if (res.data.message === "User created successfully") {
-        navigate("/signin");
-      }
+if (!payload.username || !payload.firstName || !payload.lastName || !payload.password) {
+  alert("Please fill all fields");
+  return;
+}
 
-    } catch (err) {
-      console.log(err);
-      alert("Signup failed");
-    }
-  }
+try {
 
-  return (
-    <div className="h-screen flex items-center justify-center bg-slate-200">
-      <div className="bg-white p-8 rounded-xl w-[380px] shadow">
+  const res = await axios.post(`${BACKEND_URL}/user/signup`, payload);
 
-        <h1 className="text-2xl font-bold text-center mb-4">PayFlow</h1>
-        <p className="text-center text-gray-500 mb-6">Sign up</p>
+  alert(res.data.message || "Signup successful");
 
-        <input
-          className="border w-full p-2 mb-3 rounded"
-          placeholder="First name"
-          onChange={(e) => setFirstName(e.target.value)}
-        />
+  // IMPORTANT: do NOT login here
+  localStorage.removeItem("token");
 
-        <input
-          className="border w-full p-2 mb-3 rounded"
-          placeholder="Last name"
-          onChange={(e) => setLastName(e.target.value)}
-        />
+  // go to signin page
+  navigate("/signin");
 
-        <input
-          className="border w-full p-2 mb-3 rounded"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+} catch (err) {
+  console.log(err);
+  alert(err.response?.data?.message || "Signup failed");
+}
 
-        <input
-          type="password"
-          className="border w-full p-2 mb-4 rounded"
-          placeholder="Password"
-          onChange={(e) => setPassword(e.target.value)}
-        />
 
-        <button
-          onClick={handleSignup}
-          className="bg-black text-white w-full p-2 rounded hover:bg-gray-800"
-        >
-          Sign up
-        </button>
+}
 
-      </div>
-    </div>
-  );
+return ( <div className="h-screen flex items-center justify-center bg-slate-200"> <div className="bg-white p-8 rounded-xl w-[380px] shadow">
+
+
+    <h1 className="text-2xl font-bold text-center mb-4">PayFlow</h1>
+    <p className="text-center text-gray-500 mb-6">Sign up</p>
+
+    <input className="border w-full p-2 mb-3 rounded"
+      placeholder="First name"
+      value={firstName}
+      onChange={(e) => setFirstName(e.target.value)}
+    />
+
+    <input className="border w-full p-2 mb-3 rounded"
+      placeholder="Last name"
+      value={lastName}
+      onChange={(e) => setLastName(e.target.value)}
+    />
+
+    <input className="border w-full p-2 mb-3 rounded"
+      placeholder="Email"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+    />
+
+    <input type="password"
+      className="border w-full p-2 mb-4 rounded"
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+    />
+
+    <button onClick={handleSignup}
+      className="bg-black text-white w-full p-2 rounded hover:bg-gray-800">
+      Sign up
+    </button>
+
+  </div>
+</div>
+
+
+);
 }

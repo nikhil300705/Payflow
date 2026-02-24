@@ -1,1 +1,1 @@
-export const BACKEND_URL = "http://51.21.193.154:9100/api/v1";
+export const BACKEND_URL = "http://localhost:9100/api/v1";

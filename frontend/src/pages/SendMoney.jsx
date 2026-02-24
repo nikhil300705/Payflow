@@ -1,94 +1,45 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
-import { BACKEND_URL } from "../config";
-import PinModal from "../components/PinModal";
-import "../App.css";
+import { BACKEND_URL } from "../config.js";
 
 export default function SendMoney() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  // getting user details passed from dashboard
   const { id, name } = location.state || {};
-
   const [amount, setAmount] = useState("");
-  const [showPinModal, setShowPinModal] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  if (!id) {
-    return <h3>User not selected</h3>;
-  }
+  if (!id) return <h3>User not selected</h3>;
 
-  async function handleTransfer(pin) {
+  async function send() {
     try {
-      setLoading(true);
-      setError("");
-
-      await axios.post(
-        `${BACKEND_URL}/account/transfer`,
-        {
-          to: id,
-          amount: Number(amount),
-          pin: pin
-        },
-        {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token")
-          }
-        }
+      await axios.post(`${BACKEND_URL}/account/transfer`,
+        { to:id, amount:Number(amount) },
+        { headers:{ Authorization:"Bearer "+localStorage.getItem("token") }}
       );
-
-      alert("✅ Money transferred successfully");
+      alert("Transfer success");
       navigate("/dashboard");
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        "Transaction failed. Please try again."
-      );
-    } finally {
-      setLoading(false);
-      setShowPinModal(false);
+    } catch {
+      alert("Transfer failed");
     }
   }
 
   return (
-    <div className="send-container">
-      <div className="send-card">
-        <h2>Send Money</h2>
-
-        <p className="send-to">
-          To <strong>{name}</strong>
-        </p>
+    <div className="h-screen flex items-center justify-center bg-gray-200">
+      <div className="bg-white p-8 rounded shadow w-[350px]">
+        <h2 className="text-xl mb-4">Send to {name}</h2>
 
         <input
           type="number"
-          placeholder="Enter amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          placeholder="amount"
+          className="border p-2 w-full mb-4"
+          onChange={e=>setAmount(e.target.value)}
         />
 
-        {error && <p className="error">{error}</p>}
-
-        <button
-          disabled={!amount || loading}
-          onClick={() => setShowPinModal(true)}
-        >
-          {loading ? "Processing..." : "Send Money"}
+        <button className="bg-black text-white w-full p-2" onClick={send}>
+          Send Money
         </button>
       </div>
-
-      {/* PIN MODAL */}
-      {showPinModal && (
-        <PinModal
-          onClose={() => setShowPinModal(false)}
-          onConfirm={(pin) => {
-            handleTransfer(pin);
-            return true;
-          }}
-        />
-      )}
     </div>
   );
 }

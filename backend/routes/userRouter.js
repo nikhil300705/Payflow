@@ -9,45 +9,49 @@ const router = express.Router();
 /* ===================== SIGNUP ===================== */
 router.post("/signup", async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { username, firstName, lastName, password } = req.body;
 
-    // ✅ HARD VALIDATION (prevents crash)
-    if (!firstName || !lastName || !email || !password) {
+    if (!username || !firstName || !lastName || !password) {
       return res.status(400).json({ message: "All fields required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email: username }]
+    });
+
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    const user = await User.create({
+      username,
+      email: username,        // ⭐ keeps compatibility
       firstName,
       lastName,
-      email,
       password: hashedPassword,
-      balance: 1000
+    balance: Math.floor(Math.random() * (5000000 - 1000 + 1)) + 1000
     });
 
-    res.json({ message: "Signup successful" });
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+
+    res.json({ message: "User created successfully", token });
+
   } catch (err) {
     console.error("SIGNUP ERROR:", err);
     res.status(500).json({ message: "Signup failed" });
   }
 });
-
 /* ===================== SIGNIN ===================== */
 router.post("/signin", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
-    }
+    const user = await User.findOne({
+      $or: [{ username }, { email: username }]
+    });
 
-    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -57,12 +61,10 @@ router.post("/signin", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET
-    );
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
 
     res.json({ token });
+
   } catch (err) {
     console.error("SIGNIN ERROR:", err);
     res.status(500).json({ message: "Signin failed" });
