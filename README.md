@@ -1,5 +1,4 @@
 
-
 ## INTRODUCTION
 Full-Stack Payment Application where users can send money to each other
 
